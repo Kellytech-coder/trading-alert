@@ -49,3 +49,16 @@
 - Payment proof submission and verification
 - Features comparison table (Free vs Premium)
 - Navigation links added to all pages
+
+## Vercel Deployment Fix Applied
+- Updated package.json build script to include `npx prisma generate`
+- Created .env.example with required environment variables
+
+## Vercel Setup Steps
+1. Push your code to GitHub
+2. Import project in Vercel
+3. Add these environment variables in Vercel dashboard:
+   - DATABASE_URL (use a hosted database like Vercel Postgres or Neon)
+   - NEXTAUTH_SECRET (generate with: openssl rand -base64 32)
+   - NEXTAUTH_URL (your vercel domain)
+4. Redeploy the project
