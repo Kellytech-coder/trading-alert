@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  name          String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  // Subscription fields for monetization (GTBank manual payment)
+  isPremium     Boolean   @default(false)
+  subscriptionStatus String? // "active", "pending", "canceled"
+  subscriptionStartDate DateTime?
+  subscriptionEndDate DateTime?
+  paymentReference String?
+  paymentStatus String? // "pending", "verified", "rejected"
+  paymentAmount Float?
+  paymentDate DateTime?
+  emailsThisMonth Int      @default(0)
+  lastEmailReset DateTime @default(now())
+  alerts        Alert[]
+  triggeredAlerts TriggeredAlert[]
+  accounts      Account[]
+  sessions      Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Alert {
+  id            String          @id @default(cuid())
+  userId        String
+  crypto        String
+  targetPrice   Float
+  condition     String
+  isActive      Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  triggeredAlerts TriggeredAlert[]
+}
+
+model TriggeredAlert {
+  id            String    @id @default(cuid())
+  alertId       String
+  triggeredAt   DateTime  @default(now())
+  priceAtTrigger Float
+  alert         Alert     @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+}
